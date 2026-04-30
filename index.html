@@ -1,0 +1,1322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Raborn Tax Strategy Dashboard | TY2026</title>
+<style>
+  :root {
+    --bg: #eef0fb;
+    --card: #ffffff;
+    --card-soft: #f6f7fc;
+    --primary: #6c5ce7;
+    --primary-soft: #a29bfe;
+    --primary-light: #e9e7ff;
+    --orange: #ff7a59;
+    --orange-soft: #ffa589;
+    --orange-light: #ffe4d9;
+    --green: #22c55e;
+    --green-light: #d1fae5;
+    --red: #ef4444;
+    --red-light: #fee2e2;
+    --text: #1f2241;
+    --muted: #7a7d9c;
+    --border: #ebecf5;
+    --sidebar: #6c5ce7;
+    --shadow: 0 4px 18px rgba(108, 92, 231, 0.06);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px; line-height: 1.5; }
+  body { display: flex; min-height: 100vh; }
+  #app { display: flex; flex: 1; min-height: 100vh; width: 100%; }
+
+  /* Sidebar */
+  .sidebar {
+    width: 72px; background: var(--sidebar);
+    display: flex; flex-direction: column; align-items: center;
+    padding: 24px 0; gap: 22px; flex-shrink: 0;
+    border-radius: 24px; margin: 16px 0 16px 16px;
+    position: sticky; top: 16px; height: calc(100vh - 32px);
+  }
+  .sidebar .logo {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: white; color: var(--primary);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 18px;
+  }
+  .sidebar a {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(255,255,255,0.75); text-decoration: none;
+    transition: all .2s ease;
+  }
+  .sidebar a:hover, .sidebar a.active {
+    background: rgba(255,255,255,0.18); color: white;
+  }
+  .sidebar a svg { width: 20px; height: 20px; }
+  .sidebar .spacer { flex: 1; }
+
+  /* Main */
+  main { flex: 1; padding: 22px 28px 60px; max-width: 100%; }
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 24px; gap: 16px; flex-wrap: wrap;
+  }
+  .topbar h1 {
+    font-size: 24px; font-weight: 700; letter-spacing: -0.02em;
+  }
+  .topbar h1 small { color: var(--muted); font-weight: 500; font-size: 14px; display: block; margin-top: 2px;}
+  .reset-btn {
+    background: white; color: var(--primary); border: 1px solid var(--primary-light);
+    padding: 9px 16px; border-radius: 10px; font-size: 13px; font-weight: 600;
+    cursor: pointer; box-shadow: var(--shadow);
+  }
+  .reset-btn:hover { background: var(--primary-light); }
+
+  /* Grid layout */
+  .grid { display: grid; gap: 16px; }
+  .grid.kpis5 { grid-template-columns: repeat(5, 1fr); }
+  .grid.kpis-hero { grid-template-columns: 1fr 1fr 1fr; }
+  .grid.row-2 { grid-template-columns: 1fr 1fr; }
+  .grid.row-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+  @media (max-width: 1200px) {
+    .grid.kpis5 { grid-template-columns: repeat(2, 1fr); }
+    .grid.kpis-hero { grid-template-columns: 1fr; }
+    .grid.row-2, .grid.row-3 { grid-template-columns: 1fr; }
+  }
+
+  /* Hero KPI tiles (Total Net Income, Total Taxes Paid) */
+  .kpi.hero { padding: 26px 24px; }
+  .kpi.hero .label { font-size: 12px; }
+  .kpi.hero .value { font-size: 38px; margin-top: 10px; letter-spacing: -0.025em; }
+  .kpi.hero .desc { font-size: 12.5px; margin-top: 8px; }
+  .kpi.hero.pos {
+    background: linear-gradient(135deg, #10b981, #34d399);
+    color: white;
+  }
+  .kpi.hero.pos .label, .kpi.hero.pos .desc { color: rgba(255,255,255,0.9); }
+  .kpi.hero.pos .value { color: white; }
+  .kpi.hero.neg {
+    background: linear-gradient(135deg, #ef4444, #f87171);
+    color: white;
+  }
+  .kpi.hero.neg .label, .kpi.hero.neg .desc { color: rgba(255,255,255,0.9); }
+  .kpi.hero.neg .value { color: white; }
+  .kpi.hero.brand {
+    background: linear-gradient(135deg, #6c5ce7, #8a7df0);
+    color: white;
+  }
+  .kpi.hero.brand .label, .kpi.hero.brand .desc { color: rgba(255,255,255,0.9); }
+  .kpi.hero.brand .value { color: white; }
+
+  /* Investment group separator */
+  .group-sep {
+    margin: 14px 0 6px;
+    padding: 8px 0 6px;
+    border-top: 2px solid var(--border);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    font-weight: 700;
+  }
+  .group-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    font-weight: 700;
+    padding: 4px 0 8px;
+  }
+
+  /* Card */
+  .card {
+    background: var(--card); border-radius: 18px;
+    padding: 20px; box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+  }
+  .card .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+  .card h3 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+  .card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .pill {
+    background: var(--primary-light); color: var(--primary);
+    padding: 4px 12px; border-radius: 20px; font-size: 12px;
+    font-weight: 600;
+  }
+  .pill.orange { background: var(--orange-light); color: var(--orange); }
+  .pill.green { background: #d1fae5; color: #047857; }
+  .pill.red { background: #fee2e2; color: #b91c1c; }
+
+  /* KPI tiles */
+  .kpi { padding: 18px; }
+  .kpi .value { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; margin-top: 6px; }
+  .kpi .desc { color: var(--muted); font-size: 11.5px; line-height: 1.35; margin-top: 6px; }
+  .kpi.highlight {
+    background: linear-gradient(135deg, var(--primary), #8a7df0);
+    color: white;
+  }
+  .kpi.highlight .label, .kpi.highlight .desc { color: rgba(255,255,255,0.85); }
+  .kpi.highlight .value { color: white; }
+  .kpi.orange-tone { background: linear-gradient(135deg, #ff7a59, #ffa589); color: white; }
+  .kpi.orange-tone .label, .kpi.orange-tone .desc { color: rgba(255,255,255,0.88); }
+  .kpi.orange-tone .value { color: white; }
+  .kpi.neg .value { color: var(--red); }
+  .kpi.pos .value { color: #047857; }
+
+  /* Sliders */
+  .slider-block { padding: 12px 0; border-bottom: 1px dashed var(--border); }
+  .slider-block:last-child { border-bottom: none; }
+  .slider-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+  .slider-row label { font-size: 13px; color: var(--text); font-weight: 600; }
+  .slider-row .num { color: var(--primary); font-weight: 700; font-size: 13px; min-width: 100px; text-align: right; font-variant-numeric: tabular-nums; }
+  .slider-row .num.neg { color: var(--red); }
+  /* Editable inputs styled like the .num span */
+  input.num {
+    border: 1px solid transparent; background: transparent;
+    font-family: inherit; font-weight: 700; font-size: 13px;
+    color: var(--primary); text-align: right;
+    padding: 3px 8px; border-radius: 6px; min-width: 110px;
+    font-variant-numeric: tabular-nums; outline: none;
+    cursor: text; transition: background 0.12s, border-color 0.12s;
+  }
+  input.num:hover { background: var(--card-soft); }
+  input.num:focus { background: white; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(108,92,231,0.15); }
+  input.num.neg { color: var(--red); }
+  input.num.flash-bad { border-color: var(--red); box-shadow: 0 0 0 3px rgba(239,68,68,0.18); }
+
+  /* Recommendation chip under sliders */
+  .slider-rec {
+    margin-top: 8px; display: flex; align-items: center; gap: 8px;
+    padding: 6px 10px; background: rgba(108,92,231,0.06);
+    border: 1px dashed rgba(108,92,231,0.25); border-radius: 8px;
+    font-size: 11.5px; color: var(--muted);
+  }
+  .slider-rec .rec-tag {
+    background: var(--primary-light); color: var(--primary);
+    font-weight: 700; font-size: 10.5px; padding: 2px 8px;
+    border-radius: 12px; letter-spacing: 0.04em; text-transform: uppercase;
+    flex-shrink: 0;
+  }
+  .slider-rec .rec-amt {
+    color: var(--primary); font-weight: 700;
+    text-decoration: underline dotted; cursor: pointer;
+    font-variant-numeric: tabular-nums;
+  }
+  .slider-rec .rec-amt:hover { color: #5849d4; }
+
+  /* REPS banner */
+  .reps-banner {
+    background: linear-gradient(135deg, rgba(34,197,94,0.10), rgba(34,197,94,0.04));
+    border: 1px solid rgba(34,197,94,0.25);
+    border-radius: 12px; padding: 12px 16px; margin: 0 0 14px;
+    display: flex; align-items: center; gap: 12px;
+    font-size: 12.5px; color: var(--text); line-height: 1.45;
+  }
+  .reps-banner .reps-tag {
+    background: var(--green); color: white; font-weight: 700;
+    font-size: 10.5px; padding: 4px 10px; border-radius: 12px;
+    letter-spacing: 0.05em; text-transform: uppercase; flex-shrink: 0;
+  }
+  .slider {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 6px; background: var(--primary-light);
+    border-radius: 4px; outline: none; cursor: pointer;
+  }
+  .slider::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 18px; height: 18px; background: var(--primary);
+    border-radius: 50%; cursor: pointer; border: 3px solid white;
+    box-shadow: 0 2px 6px rgba(108,92,231,0.4);
+  }
+  .slider::-moz-range-thumb {
+    width: 18px; height: 18px; background: var(--primary);
+    border-radius: 50%; cursor: pointer; border: 3px solid white;
+  }
+  .slider.orange { background: var(--orange-light); }
+  .slider.orange::-webkit-slider-thumb { background: var(--orange); box-shadow: 0 2px 6px rgba(255,122,89,0.4); }
+  .slider.orange::-moz-range-thumb { background: var(--orange); }
+  .slider.green { background: var(--green-light); }
+  .slider.green::-webkit-slider-thumb { background: var(--green); box-shadow: 0 2px 6px rgba(34,197,94,0.4); }
+  .slider.green::-moz-range-thumb { background: var(--green); }
+
+  .slider-meta { display: flex; align-items: center; justify-content: space-between; margin-top: 6px; font-size: 11px; color: var(--muted); }
+  .ent-tag { font-weight: 600; padding: 2px 8px; border-radius: 8px; font-size: 10px; letter-spacing: 0.04em; text-transform: uppercase; }
+  .ent-tag.passthru { background: var(--primary-light); color: var(--primary); }
+  .ent-tag.ccorp { background: var(--orange-light); color: var(--orange); }
+
+  /* Funding toggle (mini segmented control) */
+  .fund-toggle {
+    display: inline-flex; background: var(--card-soft); border-radius: 8px;
+    padding: 2px; border: 1px solid var(--border);
+  }
+  .fund-toggle button {
+    background: transparent; border: 0; padding: 4px 10px;
+    border-radius: 6px; font-size: 11px; font-weight: 600;
+    color: var(--muted); cursor: pointer;
+  }
+  .fund-toggle button.active { background: white; color: var(--primary); box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+  .fund-toggle button.active.holdings { color: var(--orange); }
+
+  /* Auth gate */
+  .auth-gate {
+    position: fixed; inset: 0; z-index: 9999;
+    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-family: inherit;
+  }
+  .auth-card {
+    background: white; border-radius: 18px; padding: 36px 32px;
+    width: min(90vw, 380px); box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    text-align: center;
+  }
+  .auth-card h2 {
+    font-size: 18px; font-weight: 700; margin-bottom: 4px;
+    color: var(--text);
+  }
+  .auth-card p { color: var(--muted); font-size: 13px; margin-bottom: 18px; }
+  .auth-card input[type=password] {
+    width: 100%; padding: 12px 14px; border-radius: 10px;
+    border: 1px solid var(--border); font-size: 15px; font-family: inherit;
+    box-sizing: border-box; margin-bottom: 10px; outline: none;
+    transition: border-color 0.15s;
+  }
+  .auth-card input[type=password]:focus { border-color: var(--primary); }
+  .auth-card button {
+    width: 100%; padding: 12px; border-radius: 10px; border: none;
+    background: var(--primary); color: white; font-weight: 600; font-size: 14px;
+    cursor: pointer; font-family: inherit;
+    transition: background 0.15s;
+  }
+  .auth-card button:hover { background: #5849d4; }
+  .auth-err { color: var(--red); font-size: 12px; margin-top: 10px; min-height: 16px; }
+  .app-locked { display: none !important; }
+
+  /* Section divider */
+  .section-title {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--muted); font-weight: 700; margin: 26px 0 12px; padding-left: 4px;
+  }
+
+  /* Cash-to row */
+  .cash-row {
+    display: grid; grid-template-columns: 1fr auto auto; gap: 12px;
+    align-items: center; padding: 10px 12px; border-radius: 10px;
+    background: var(--card-soft); margin-bottom: 8px;
+  }
+  .cash-row .name { font-weight: 600; font-size: 13px; }
+  .cash-row .name small { display: block; color: var(--muted); font-size: 11px; font-weight: 500; margin-top: 2px;}
+  .cash-row .src { font-size: 11px; color: var(--muted); }
+  .cash-row .amt { font-weight: 700; font-size: 14px; min-width: 110px; text-align: right; font-variant-numeric: tabular-nums; }
+  .cash-row .amt.neg { color: var(--red); }
+  .cash-row .amt.pos { color: #047857; }
+
+  /* Tax breakdown row */
+  .tax-row {
+    display: grid; grid-template-columns: 1fr auto auto; gap: 14px;
+    padding: 9px 0; border-bottom: 1px dashed var(--border);
+    font-size: 13px; align-items: center;
+  }
+  .tax-row:last-child { border-bottom: none; }
+  .tax-row .name { color: var(--text); }
+  .tax-row .name small { color: var(--muted); font-size: 11px; display: block; }
+  .tax-row .amt { font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+  .tax-row .pct { color: var(--muted); font-size: 12px; min-width: 54px; text-align: right;}
+  .tax-row.total { font-weight: 700; font-size: 14px; padding-top: 12px; }
+  .tax-row.total .name { color: var(--primary);}
+  .tax-row.total .amt { color: var(--primary);}
+
+  .notes {
+    background: linear-gradient(135deg, var(--primary-light), white);
+    border: 1px solid var(--primary-light); border-radius: 14px;
+    padding: 14px; font-size: 12.5px; color: var(--text);
+  }
+  .notes b { color: var(--primary); }
+
+  footer { color: var(--muted); font-size: 11.5px; text-align: center; margin-top: 32px; padding: 12px;}
+</style>
+</head>
+<body>
+
+<!-- ====================== AUTH GATE ====================== -->
+<div class="auth-gate" id="auth-gate">
+  <form class="auth-card" id="auth-form" autocomplete="off">
+    <h2>TY2026 Tax Strategy</h2>
+    <p>Enter password to view dashboard</p>
+    <input type="password" id="auth-pwd" placeholder="Password" autocomplete="off" autofocus />
+    <button type="submit">Unlock</button>
+    <div class="auth-err" id="auth-err"></div>
+  </form>
+</div>
+
+<div id="app" class="app-locked">
+
+<aside class="sidebar">
+  <div class="logo">TR</div>
+  <a href="#kpis" class="active" title="KPIs">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg>
+  </a>
+  <a href="#companies" title="Companies">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+  </a>
+  <a href="#investments" title="Investments">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>
+  </a>
+  <a href="#cashto" title="Cash To">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M5 9h11a3 3 0 010 6H8a3 3 0 000 6h11"/></svg>
+  </a>
+  <div class="spacer"></div>
+  <a href="#" title="Settings">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06A2 2 0 117.04 4.96l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+  </a>
+</aside>
+
+<main>
+  <div class="topbar">
+    <div>
+      <h1>TY2026 Tax Strategy Dashboard <small>Tyler Raborn — slider-driven planning workspace</small></h1>
+    </div>
+    <button class="reset-btn" id="reset-btn">Reset to defaults</button>
+  </div>
+
+  <!-- ====================== HERO TOTALS ====================== -->
+  <div class="section-title" id="kpis">Totals</div>
+  <div class="grid kpis-hero">
+    <div class="card kpi hero brand">
+      <div class="label">Total Net Income <small style="opacity:.85; text-transform:none; letter-spacing:0; font-weight:500;">(pre-tax)</small></div>
+      <div class="value" id="kpi-total-gross">$—</div>
+      <div class="desc">Gross across every entity before taxes — personal pass-thru + Holdings C-Corp gross</div>
+    </div>
+    <div class="card kpi hero neg">
+      <div class="label">Total Taxes Paid</div>
+      <div class="value" id="kpi-total-tax">$—</div>
+      <div class="desc">Personal + corporate, federal + state combined</div>
+    </div>
+    <div class="card kpi hero pos">
+      <div class="label">Post-Tax Income</div>
+      <div class="value" id="kpi-total-post">$—</div>
+      <div class="desc">After-tax cash across Tyler + every entity (before any capital deployments)</div>
+    </div>
+  </div>
+
+  <!-- ====================== KPI BAR ====================== -->
+  <div class="section-title">Top-line breakdown</div>
+  <div class="grid kpis5">
+    <div class="card kpi pos">
+      <div class="label">Net Income</div>
+      <div class="value" id="kpi-net">$—</div>
+      <div class="desc">Total after-tax cash across Tyler + entities</div>
+    </div>
+    <div class="card kpi neg">
+      <div class="label">Personal State Taxes</div>
+      <div class="value" id="kpi-pst">$—</div>
+      <div class="desc">MS state income tax on pass-thru income</div>
+    </div>
+    <div class="card kpi neg">
+      <div class="label">Personal Federal Taxes</div>
+      <div class="value" id="kpi-pft">$—</div>
+      <div class="desc">Federal personal: brackets + SE + add'l Medicare</div>
+    </div>
+    <div class="card kpi neg">
+      <div class="label">State Corporate Taxes</div>
+      <div class="value" id="kpi-cst">$—</div>
+      <div class="desc">Per state of domicile · Raborn Holdings is WY (0%)</div>
+    </div>
+    <div class="card kpi neg">
+      <div class="label">Federal Corporate Taxes</div>
+      <div class="value" id="kpi-cft">$—</div>
+      <div class="desc">21% C-Corp federal on Raborn Holdings</div>
+    </div>
+  </div>
+
+  <!-- ====================== SLIDER ROW ====================== -->
+  <div class="grid row-2" style="margin-top: 22px;">
+
+    <!-- COMPANIES -->
+    <div class="card" id="companies">
+      <div class="card-header">
+        <div>
+          <h3>Income components — companies</h3>
+          <div class="label" style="text-transform:none; letter-spacing:0; color:var(--muted); font-weight:500;">
+            Net to each entity (post inter-company billing). Range −$1M to $3M.
+          </div>
+        </div>
+        <div class="pill">7 entities</div>
+      </div>
+
+      <div id="companies-list"></div>
+
+      <div class="notes" style="margin-top: 14px;">
+        <b>Tax model:</b> Raborn Holdings is the only C-Corp — Federal 21%, <b>no WY state corporate income tax</b>.
+        Raborn Media, Raborn IT, 25 Woodgreen, Shrink Waste, Cleaning Co., and Raborn Realty are all pass-thru (LLC / S-Corp) and flow to your personal 1040 (MS).
+        Slide a company negative to model a loss — it offsets other pass-thru income on your 1040.
+      </div>
+    </div>
+
+    <!-- INVESTMENTS -->
+    <div class="card" id="investments">
+      <div class="card-header">
+        <div>
+          <h3>Investment components</h3>
+          <div class="label" style="text-transform:none; letter-spacing:0; color:var(--muted); font-weight:500;">
+            Cash deployed (positive) or distributions received (negative). Toggle funding source where applicable.
+          </div>
+        </div>
+        <div class="pill orange">Cash uses</div>
+      </div>
+
+      <div id="investments-list"></div>
+
+      <div class="notes" style="margin-top: 14px;">
+        <b>Funding source:</b> sliders with a toggle let you decide whether the capital comes from <b>Tyler personally</b> (after-tax cash) or <b>Raborn Holdings</b> (C-Corp retained earnings). The Cash-To section reflects the chosen source.
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ====================== CASH TO ====================== -->
+  <div class="section-title" id="cashto">Cash to — where the money goes</div>
+  <div class="grid row-3">
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <h3>Cash to Tyler</h3>
+          <div class="label" style="text-transform:none; letter-spacing:0; color:var(--muted); font-weight:500;">
+            After all personal taxes and Tyler-funded deployments
+          </div>
+        </div>
+        <div class="pill green" id="tyler-cash-pill">$—</div>
+      </div>
+      <div id="tyler-cash-list"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <h3>Cash retained at Raborn Holdings</h3>
+          <div class="label" style="text-transform:none; letter-spacing:0; color:var(--muted); font-weight:500;">
+            Post-corp-tax cash, less any Holdings-funded deployments
+          </div>
+        </div>
+        <div class="pill orange" id="holdings-cash-pill">$—</div>
+      </div>
+      <div id="holdings-cash-list"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <h3>Cash to investments</h3>
+          <div class="label" style="text-transform:none; letter-spacing:0; color:var(--muted); font-weight:500;">
+            Total deployed and the funding source for each
+          </div>
+        </div>
+        <div class="pill" id="invest-cash-pill">$—</div>
+      </div>
+      <div id="invest-cash-list"></div>
+    </div>
+
+  </div>
+
+  <!-- ====================== TAX BREAKDOWN ====================== -->
+  <div class="section-title">Tax breakdown</div>
+  <div class="grid row-2">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <h3>Personal taxes</h3>
+          <div class="label" style="text-transform:none; letter-spacing:0; color:var(--muted); font-weight:500;">
+            On pass-thru income flowing to your 1040
+          </div>
+        </div>
+      </div>
+      <div id="personal-tax-list"></div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <h3>Corporate taxes</h3>
+          <div class="label" style="text-transform:none; letter-spacing:0; color:var(--muted); font-weight:500;">
+            On Raborn Holdings (the only C-Corp)
+          </div>
+        </div>
+      </div>
+      <div id="corp-tax-list"></div>
+    </div>
+  </div>
+
+  <footer>
+    Estimates only — for CPA-prep modeling. 2026 personal Federal MFJ brackets · MS state ~4% personal · MS corp ~5% · C-Corp Federal 21% · SE 15.3% on first $176,100 · Add'l Medicare 0.9% over $250k.
+  </footer>
+
+</main>
+
+</div><!-- /#app -->
+
+<script>
+'use strict';
+
+/* ---------- Auth gate ---------- */
+(function () {
+  // Mildly obfuscated; this is a casual barrier, not real security.
+  // Anything in client-side JS can be inspected — keep nothing truly sensitive in this file.
+  var EXPECTED = atob('QnJlZXMzNyE='); // "Brees37!"
+  var form = document.getElementById('auth-form');
+  var input = document.getElementById('auth-pwd');
+  var err = document.getElementById('auth-err');
+  var gate = document.getElementById('auth-gate');
+  var app = document.getElementById('app');
+  if (!form) return;
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (input.value === EXPECTED) {
+      gate.style.display = 'none';
+      app.classList.remove('app-locked');
+      err.textContent = '';
+    } else {
+      err.textContent = 'Incorrect password.';
+      input.select();
+    }
+  });
+})();
+
+/* ---------- Money formatting ---------- */
+const fmt0 = n => (n < 0 ? '-' : '') + '$' + Math.abs(Math.round(n)).toLocaleString();
+const fmtK = n => {
+  const abs = Math.abs(n);
+  if (abs >= 1e6) return (n < 0 ? '-' : '') + '$' + (abs/1e6).toFixed(2) + 'M';
+  if (abs >= 1e3) return (n < 0 ? '-' : '') + '$' + (abs/1e3).toFixed(0) + 'K';
+  return fmt0(n);
+};
+
+/* ---------- Entity definitions ---------- */
+// Companies (income sliders) — slider value is NET income (post inter-company billing)
+const COMPANIES = [
+  { id: 'media',     name: 'Raborn Media',     subtype: 'passthru', state: 'MS', default: 1200000, note: 'LLC / S-Corp · MS' },
+  { id: 'holdings',  name: 'Raborn Holdings',  subtype: 'ccorp',    state: 'WY', default: 800000,  note: 'C-Corp · WY · no state corp tax' },
+  { id: 'rabornit',  name: 'Raborn IT',        subtype: 'passthru', state: 'MS', default: -200000, note: 'LLC / S-Corp · 100% Tyler · slide negative for funding' },
+  { id: 'woodgreen', name: '25 Woodgreen',     subtype: 'passthru', state: 'MS', default: 0,       note: 'syndicated RE' },
+  { id: 'shrink',    name: 'Shrink Waste',     subtype: 'passthru', state: 'MS', default: -40000,  note: '50% · seed-stage' },
+  { id: 'cleaning',  name: 'Cleaning Co.',     subtype: 'passthru', state: 'MS', default: 0,       note: '~5% Tyler · MS' },
+  { id: 'realty',    name: 'Raborn Realty',    subtype: 'passthru', state: 'MS', default: 0,       note: 'commission · small' },
+];
+
+// Investment components (cash deployment sliders) — positive = cash out
+// group: 'personal'   = Tyler-only personal uses (no funding toggle)
+// group: 'realestate' = RE deployments — generate REPS depreciation losses (Tyler ↔ Holdings)
+// group: 'operating'  = Operating-business capital (Tyler ↔ Holdings)
+// rec/recNote: optional recommended threshold and rationale, click to apply
+const INVESTMENTS = [
+  // ---- Personal cash uses ----
+  { id: 'traditional401k', name: 'Traditional 401(k) / IRA', group: 'personal', fundable: false, default: 0,
+    note: 'pre-tax deferral · reduces federal AGI now · taxed on withdrawal',
+    rec: 0,      recNote: 'Tyler primarily uses Roth — keep this at $0 unless funneling income into a low-bracket future year' },
+  { id: 'roth401k',       name: 'Roth 401(k) / IRA',     group: 'personal', fundable: false, default: 70000,
+    note: 'after-tax · NO current-year deduction · tax-free growth & qualified withdrawals',
+    rec: 70000,  recNote: 'Solo 401(k) total annual addition cap ≈ $70k (mega-backdoor Roth fills the gap)' },
+  { id: 'plan529',        name: '529 college plans',    group: 'personal', fundable: false, default: 40000,
+    note: 'NOT federally deductible · MS deducts up to $10k/beneficiary/yr',
+    rec: 40000,  recNote: 'MS state deduction cap: 4 kids × $10k = $40k (plus tax-free growth)' },
+  { id: 'charity',        name: 'Charitable giving',    group: 'personal', fundable: false, default: 50000,
+    note: 'itemized below the line · cash to public charity capped at 60% of AGI',
+    rec: 50000,  recNote: 'Bunch into a DAF in high-income years to clear the standard-deduction hurdle' },
+  // ---- Real estate (REPS depreciation flows to active income) ----
+  { id: 'reSyndications', name: 'Real Estate syndications', group: 'realestate', fundable: true, default: 250000, defaultSource: 'holdings',
+    note: 'LP equity in new deals · cost-seg + bonus depreciation under REPS',
+    rec: 250000, recNote: 'At $250k deployed, ~$75k Year-1 K-1 loss offsets active income' },
+  { id: 'woodgreenCap',   name: '25 Woodgreen capital', group: 'realestate', fundable: true, default: 200000, defaultSource: 'holdings',
+    note: 'capital into the syndicated RE deal · counts toward REPS depreciation pool',
+    rec: 100000, recNote: '~$30k Year-1 paper loss under REPS via cost-seg' },
+  // ---- Operating-business capital (Tyler ↔ Holdings) ----
+  { id: 'newVenture',     name: 'New venture / seed',   group: 'operating', fundable: true, default: 0, defaultSource: 'holdings',
+    note: 'next bet · seed equity · QSBS-eligible if structured right',
+    rec: 0,      recNote: 'Hold 5+ yrs for §1202 QSBS exclusion (up to $10M gain tax-free)' },
+  { id: 'shrinkCap',      name: 'Shrink Waste capital', group: 'operating', fundable: true, default: 100000, defaultSource: 'holdings',
+    note: 'cap call into Shrink',
+    rec: 0,      recNote: 'Size to runway needs · operating losses pass through to your 1040' },
+  { id: 'cleaningCap',    name: 'Cleaning Co. capital', group: 'operating', fundable: true, default: 0, defaultSource: 'holdings',
+    note: 'cap into cleaning operation',
+    rec: 0,      recNote: 'Size to growth needs · 5% Tyler interest is small-impact' },
+  { id: 'realtyCap',      name: 'Raborn Realty capital', group: 'operating', fundable: true, default: 0, defaultSource: 'holdings',
+    note: 'cap into Realty',
+    rec: 0,      recNote: 'Brokerage typically has low capital needs · keep dry powder elsewhere' },
+];
+
+/* ---------- State ---------- */
+const STATE = {
+  companies: {},     // id -> number
+  investments: {},   // id -> { amount, source: 'tyler'|'holdings' }
+};
+
+function loadDefaults() {
+  COMPANIES.forEach(c => { STATE.companies[c.id] = c.default; });
+  INVESTMENTS.forEach(i => {
+    // Fundable items default to Holdings-funded; non-fundable remain Tyler-only.
+    STATE.investments[i.id] = {
+      amount: i.default,
+      source: i.fundable ? (i.defaultSource || 'holdings') : 'tyler',
+    };
+  });
+}
+loadDefaults();
+
+/* ---------- Tax model (TY2026 estimates, MFJ) ---------- */
+// Federal 2026 MFJ brackets (estimates; close to projected indexed values)
+const FED_BRACKETS = [
+  { upTo: 23850,  rate: 0.10 },
+  { upTo: 96950,  rate: 0.12 },
+  { upTo: 206700, rate: 0.22 },
+  { upTo: 394600, rate: 0.24 },
+  { upTo: 501050, rate: 0.32 },
+  { upTo: 751600, rate: 0.35 },
+  { upTo: Infinity, rate: 0.37 },
+];
+const STD_DEDUCTION_MFJ = 31500; // 2026 MFJ estimate
+const SE_BASE_LIMIT = 176100;    // 2026 SS wage base estimate
+const SE_SS_RATE = 0.124;
+const SE_MEDICARE_RATE = 0.029;
+const ADDL_MEDICARE_RATE = 0.009;
+const ADDL_MEDICARE_THRESHOLD_MFJ = 250000;
+const MS_PERSONAL_RATE = 0.04;   // MS flat personal effective ~4%
+const FED_CORP_RATE = 0.21;
+
+// Per-state C-Corp income tax rates. Add new states as needed.
+// WY has no state corporate income tax. MS corp rate ~5% (graduated, top 5%).
+const STATE_CORP_RATES = {
+  MS: 0.05,
+  WY: 0.00,
+  // TX: 0.00,  // (franchise tax instead — not modeled here)
+  // DE: 0.087, // etc.
+};
+
+// Real Estate Professional Status (REPS) — Tyler qualifies as a real estate professional
+// per IRC §469(c)(7), so passive losses from rental real estate become non-passive and
+// can offset active income (W-2, business, K-1 ordinary). Year-1 cost-seg + bonus
+// depreciation typically pulls forward ~25-35% of contributed capital as a paper loss.
+const RE_DEP_LOSS_RATE = 0.30;   // 30% of RE cash deployed → Year-1 K-1 loss
+
+// MS 529 state deduction
+const NUM_529_BENEFICIARIES = 4;          // 4 kids
+const MS_529_PER_BENEFICIARY_LIMIT = 10000; // MS state deduction limit per beneficiary
+
+function fedBracketTax(taxable) {
+  if (taxable <= 0) return 0;
+  let tax = 0, prev = 0;
+  for (const b of FED_BRACKETS) {
+    const slice = Math.min(taxable, b.upTo) - prev;
+    if (slice > 0) tax += slice * b.rate;
+    prev = b.upTo;
+    if (taxable <= b.upTo) break;
+  }
+  return tax;
+}
+
+function selfEmploymentTax(seIncome) {
+  if (seIncome <= 0) return 0;
+  const taxableSE = seIncome * 0.9235;
+  const ssPortion = Math.min(taxableSE, SE_BASE_LIMIT) * SE_SS_RATE;
+  const medicare = taxableSE * SE_MEDICARE_RATE;
+  return ssPortion + medicare;
+}
+
+function additionalMedicare(personalIncome) {
+  const over = personalIncome - ADDL_MEDICARE_THRESHOLD_MFJ;
+  return over > 0 ? over * ADDL_MEDICARE_RATE : 0;
+}
+
+function compute() {
+  // Pass-thru entities → personal income
+  const passthruIds = COMPANIES.filter(c => c.subtype === 'passthru').map(c => c.id);
+  const personalGross = passthruIds.reduce((s, id) => s + (STATE.companies[id] || 0), 0);
+
+  // C-Corp bucket — iterate over every entity flagged as 'ccorp' (today: Holdings only)
+  const ccorpEntities = COMPANIES.filter(c => c.subtype === 'ccorp');
+  const corpGross = ccorpEntities.reduce((s, c) => s + (STATE.companies[c.id] || 0), 0);
+
+  // Only TRADITIONAL pre-tax 401(k)/IRA reduces current-year federal AGI.
+  // Roth contributions are after-tax — no current-year deduction (just tax-free growth).
+  const traditionalDeferral = STATE.investments.traditional401k.amount || 0;
+  const rothContrib = STATE.investments.roth401k.amount || 0;
+  const iraDeferral = traditionalDeferral; // alias for downstream code
+  const charity = STATE.investments.charity.amount || 0;
+
+  // Personal SE — assume Media is SE-type income (sole material participation)
+  // Other pass-thru (RE, Shrink, Cleaning, Realty) usually not SE — keep simple: only Media is SE.
+  const seIncome = Math.max(0, STATE.companies.media || 0);
+  const seTax = selfEmploymentTax(seIncome);
+  const halfSE = seTax / 2;
+
+  // ---- REPS (Real Estate Professional) depreciation loss ----
+  // Tyler qualifies as a real estate professional, so K-1 paper losses from
+  // RE syndications + 25 Woodgreen capital deployments offset ACTIVE income
+  // (not just passive). Conservative ~30% of cash deployed becomes a Year-1
+  // depreciation loss via cost-seg + bonus depreciation.
+  const reCash = Math.max(0, STATE.investments.reSyndications.amount || 0)
+              + Math.max(0, STATE.investments.woodgreenCap.amount || 0);
+  const repsDepLoss = reCash * RE_DEP_LOSS_RATE;
+
+  // ---- MS 529 state deduction ----
+  // MS allows up to $10,000 per beneficiary per year for the MS College Savings Plan.
+  // Tyler has 4 kids → cap $40k state deduction.
+  const ms529Limit = NUM_529_BENEFICIARIES * MS_529_PER_BENEFICIARY_LIMIT;
+  const ms529Deduction = Math.min(STATE.investments.plan529.amount || 0, ms529Limit);
+
+  // Personal taxable income (federal) — approximate
+  const personalAGI = personalGross - halfSE - iraDeferral - repsDepLoss;
+  const personalTaxableFed = Math.max(0, personalAGI - STD_DEDUCTION_MFJ - charity);
+  const personalFedBracketTax = fedBracketTax(personalTaxableFed);
+  const addlMed = additionalMedicare(Math.max(0, personalAGI));
+  const personalFed = personalFedBracketTax + seTax + addlMed;
+
+  // Personal MS — apply 529 deduction here (federal-AGI-conforming start, then MS subtractions)
+  const personalMSTaxable = Math.max(0, personalAGI - 12000 - ms529Deduction); // rough MS deduction proxy
+  const personalState = personalMSTaxable * MS_PERSONAL_RATE;
+
+  // Corp federal & state — federal is uniform 21%; state is per-entity by state of domicile.
+  const corpTaxable = Math.max(0, corpGross);
+  const corpFed = corpTaxable * FED_CORP_RATE;
+  // Build a per-entity breakdown of state corp tax so we can show it in the breakdown card.
+  const corpStateBreakdown = ccorpEntities.map(c => {
+    const taxable = Math.max(0, STATE.companies[c.id] || 0);
+    const rate = STATE_CORP_RATES[c.state] != null ? STATE_CORP_RATES[c.state] : 0;
+    return { id: c.id, name: c.name, state: c.state, taxable, rate, tax: taxable * rate };
+  });
+  const corpState = corpStateBreakdown.reduce((s, e) => s + e.tax, 0);
+
+  // Cash flows
+  const personalAfterTax = personalGross - personalFed - personalState;
+  const corpAfterTax = corpGross - corpFed - corpState; // can be negative if losses
+
+  // Investments split by source
+  let investTyler = 0, investHoldings = 0;
+  INVESTMENTS.forEach(i => {
+    const inv = STATE.investments[i.id];
+    if (!inv) return;
+    if (i.fundable && inv.source === 'holdings') investHoldings += inv.amount;
+    else investTyler += inv.amount;
+  });
+
+  // Cash to Tyler = personalAfterTax - Tyler-funded investments
+  const cashToTyler = personalAfterTax - investTyler;
+  // Cash retained at Holdings = corpAfterTax - Holdings-funded investments
+  const cashAtHoldings = corpAfterTax - investHoldings;
+  // Total invested
+  const cashToInvestments = investTyler + investHoldings;
+
+  // Pre-tax gross across all buckets
+  const grossIncome = personalGross + corpGross;
+  // Post-tax = total after-tax across all buckets
+  const netIncome = personalAfterTax + corpAfterTax;
+  // Total taxes paid = personal + corporate, federal + state
+  const totalTaxes = personalFed + personalState + corpFed + corpState;
+
+  return {
+    personalGross, corpGross, grossIncome,
+    seTax, addlMed, personalFedBracketTax, personalFed, personalState,
+    corpFed, corpState,
+    personalAfterTax, corpAfterTax,
+    investTyler, investHoldings, cashToTyler, cashAtHoldings, cashToInvestments,
+    netIncome, totalTaxes,
+    iraDeferral, traditionalDeferral, rothContrib, charity,
+    repsDepLoss, ms529Deduction, reCash,
+    personalTaxableFed, personalAGI, corpTaxable,
+    corpStateBreakdown,
+  };
+}
+
+/* ---------- Render ---------- */
+function setText(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = text;
+}
+
+function buildCompanySliders() {
+  const list = document.getElementById('companies-list');
+  list.innerHTML = '';
+  COMPANIES.forEach(c => {
+    const wrap = document.createElement('div');
+    wrap.className = 'slider-block';
+    const recHtml = c.rec != null ? `
+      <div class="slider-rec">
+        <span class="rec-tag">Suggested</span>
+        <span><span class="rec-amt" data-co="${c.id}" data-rec="${c.rec}">${fmtK(c.rec)}</span> — ${c.recNote || ''}</span>
+      </div>` : '';
+    wrap.innerHTML = `
+      <div class="slider-row">
+        <label for="co-${c.id}">${c.name}</label>
+        <input type="text" class="num" id="co-${c.id}-val" data-co="${c.id}" inputmode="text" autocomplete="off" />
+      </div>
+      <input type="range" id="co-${c.id}" class="slider${c.subtype==='ccorp' ? ' orange' : ''}"
+        min="-1000000" max="3000000" step="10000" value="${STATE.companies[c.id]}" />
+      <div class="slider-meta">
+        <span>${c.note}</span>
+        <span class="ent-tag ${c.subtype}">${c.subtype === 'ccorp' ? 'C-Corp' : 'pass-thru'}</span>
+      </div>
+      ${recHtml}
+    `;
+    list.appendChild(wrap);
+  });
+}
+
+function buildInvestmentSliders() {
+  const list = document.getElementById('investments-list');
+  list.innerHTML = '';
+
+  const GROUP_LABELS = {
+    personal:   'Tyler-only — personal cash uses',
+    realestate: 'Real Estate — REPS depreciation flows to active income',
+    operating:  'Operating capital — Tyler ↔ Holdings flip',
+  };
+
+  let lastGroup = null;
+  INVESTMENTS.forEach(i => {
+    if (i.group !== lastGroup) {
+      const sep = document.createElement('div');
+      sep.className = lastGroup === null ? 'group-label' : 'group-sep';
+      sep.textContent = GROUP_LABELS[i.group] || i.group;
+      list.appendChild(sep);
+      // Real estate group gets the REPS banner right after its label
+      if (i.group === 'realestate') {
+        const banner = document.createElement('div');
+        banner.className = 'reps-banner';
+        banner.innerHTML = `
+          <span class="reps-tag">REPS</span>
+          <span>
+            <b>Real Estate Professional status assumed.</b>
+            These RE deployments generate K-1 paper losses (~30% of cash deployed via cost-seg + bonus depreciation) that offset your <b>active</b> income, not just passive.
+          </span>
+        `;
+        list.appendChild(banner);
+      }
+      lastGroup = i.group;
+    }
+    const wrap = document.createElement('div');
+    wrap.className = 'slider-block';
+    const inv = STATE.investments[i.id];
+    const toggle = i.fundable ? `
+      <div class="fund-toggle" data-inv="${i.id}">
+        <button class="src-tyler ${inv.source==='tyler'?'active':''}" data-source="tyler">Tyler</button>
+        <button class="src-holdings ${inv.source==='holdings'?'active holdings':''}" data-source="holdings">Holdings</button>
+      </div>` : `<span class="ent-tag passthru">Tyler-only</span>`;
+
+    const recHtml = i.rec != null ? `
+      <div class="slider-rec">
+        <span class="rec-tag">Suggested</span>
+        <span><span class="rec-amt" data-inv="${i.id}" data-rec="${i.rec}">${fmtK(i.rec)}</span> — ${i.recNote || ''}</span>
+      </div>` : '';
+
+    wrap.innerHTML = `
+      <div class="slider-row">
+        <label for="inv-${i.id}">${i.name}</label>
+        <input type="text" class="num" id="inv-${i.id}-val" data-inv="${i.id}" inputmode="text" autocomplete="off" />
+      </div>
+      <input type="range" id="inv-${i.id}" class="slider green"
+        min="-1000000" max="3000000" step="5000" value="${inv.amount}" />
+      <div class="slider-meta">
+        <span>${i.note}</span>
+        ${toggle}
+      </div>
+      ${recHtml}
+    `;
+    list.appendChild(wrap);
+  });
+}
+
+// Parse a freeform amount string. Accepts "$1.2M", "1.2M", "1200K", "1,200,000", "-50000", etc.
+// Returns a Number, or null if the input is unparseable.
+function parseAmount(raw) {
+  if (raw == null) return null;
+  let s = String(raw).replace(/[\s$,]/g, '').trim();
+  if (s === '' || s === '-') return null;
+  const m = s.match(/^(-?\d+(?:\.\d+)?)\s*([kKmMbB]?)$/);
+  if (!m) return null;
+  let n = parseFloat(m[1]);
+  if (!isFinite(n)) return null;
+  const sfx = m[2].toLowerCase();
+  if (sfx === 'b') n *= 1e9;
+  else if (sfx === 'm') n *= 1e6;
+  else if (sfx === 'k') n *= 1e3;
+  return n;
+}
+
+function clamp(n, lo, hi) { return Math.max(lo, Math.min(hi, n)); }
+
+function commitInput(inputEl, sliderEl, applyVal) {
+  const parsed = parseAmount(inputEl.value);
+  if (parsed === null) {
+    inputEl.classList.add('flash-bad');
+    setTimeout(() => inputEl.classList.remove('flash-bad'), 600);
+    render(); // revert
+    return;
+  }
+  const lo = +sliderEl.min, hi = +sliderEl.max;
+  const v = clamp(parsed, lo, hi);
+  applyVal(v);
+  sliderEl.value = v;
+  render();
+}
+
+function bindSliders() {
+  COMPANIES.forEach(c => {
+    const sl = document.getElementById('co-' + c.id);
+    const inp = document.getElementById('co-' + c.id + '-val');
+    sl.addEventListener('input', e => {
+      STATE.companies[c.id] = +e.target.value;
+      render();
+    });
+    if (inp) {
+      inp.addEventListener('focus', () => { inp.value = STATE.companies[c.id]; inp.select(); });
+      inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); inp.blur(); } if (e.key === 'Escape') { e.preventDefault(); render(); inp.blur(); } });
+      inp.addEventListener('blur', () => commitInput(inp, sl, v => STATE.companies[c.id] = v));
+    }
+  });
+  INVESTMENTS.forEach(i => {
+    const sl = document.getElementById('inv-' + i.id);
+    const inp = document.getElementById('inv-' + i.id + '-val');
+    sl.addEventListener('input', e => {
+      STATE.investments[i.id].amount = +e.target.value;
+      render();
+    });
+    if (inp) {
+      inp.addEventListener('focus', () => { inp.value = STATE.investments[i.id].amount; inp.select(); });
+      inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); inp.blur(); } if (e.key === 'Escape') { e.preventDefault(); render(); inp.blur(); } });
+      inp.addEventListener('blur', () => commitInput(inp, sl, v => STATE.investments[i.id].amount = v));
+    }
+  });
+  // Click "Suggested" amount → apply that value
+  document.querySelectorAll('.rec-amt').forEach(el => {
+    el.addEventListener('click', () => {
+      const rec = +el.getAttribute('data-rec');
+      const co = el.getAttribute('data-co');
+      const inv = el.getAttribute('data-inv');
+      if (co) {
+        const sl = document.getElementById('co-' + co);
+        STATE.companies[co] = clamp(rec, +sl.min, +sl.max);
+        sl.value = STATE.companies[co];
+      } else if (inv) {
+        const sl = document.getElementById('inv-' + inv);
+        STATE.investments[inv].amount = clamp(rec, +sl.min, +sl.max);
+        sl.value = STATE.investments[inv].amount;
+      }
+      render();
+    });
+  });
+  // Funding-source toggles
+  document.querySelectorAll('.fund-toggle').forEach(box => {
+    const invId = box.getAttribute('data-inv');
+    box.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const src = btn.getAttribute('data-source');
+        STATE.investments[invId].source = src;
+        // refresh active classes
+        box.querySelectorAll('button').forEach(b => {
+          b.classList.remove('active', 'holdings');
+        });
+        btn.classList.add('active');
+        if (src === 'holdings') btn.classList.add('holdings');
+        render();
+      });
+    });
+  });
+}
+
+function bindResetOnce() {
+  document.getElementById('reset-btn').addEventListener('click', () => {
+    loadDefaults();
+    buildCompanySliders();
+    buildInvestmentSliders();
+    bindSliders(); // re-bind because innerHTML was replaced
+    render();
+  });
+}
+
+function renderSliderValues() {
+  const ae = document.activeElement;
+  COMPANIES.forEach(c => {
+    const v = STATE.companies[c.id];
+    const el = document.getElementById('co-' + c.id + '-val');
+    if (el && el !== ae) {
+      if (el.tagName === 'INPUT') el.value = fmtK(v);
+      else el.textContent = fmtK(v);
+      el.classList.toggle('neg', v < 0);
+    }
+  });
+  INVESTMENTS.forEach(i => {
+    const v = STATE.investments[i.id].amount;
+    const el = document.getElementById('inv-' + i.id + '-val');
+    if (el && el !== ae) {
+      if (el.tagName === 'INPUT') el.value = fmtK(v);
+      else el.textContent = fmtK(v);
+      el.classList.toggle('neg', v < 0);
+    }
+  });
+}
+
+function renderKPIs(r) {
+  // Hero totals
+  setText('kpi-total-gross', fmtK(r.grossIncome));
+  setText('kpi-total-tax', fmtK(r.totalTaxes));
+  setText('kpi-total-post', fmtK(r.netIncome));
+  // Detail row
+  setText('kpi-net', fmtK(r.netIncome));
+  setText('kpi-pst', fmtK(r.personalState));
+  setText('kpi-pft', fmtK(r.personalFed));
+  setText('kpi-cst', fmtK(r.corpState));
+  setText('kpi-cft', fmtK(r.corpFed));
+  // colour the Net tile based on sign
+  const netCard = document.getElementById('kpi-net').closest('.card');
+  if (netCard) {
+    netCard.classList.toggle('pos', r.netIncome >= 0);
+    netCard.classList.toggle('neg', r.netIncome < 0);
+  }
+}
+
+function renderCashTo(r) {
+  // Cash to Tyler — list out personal income, taxes, deployments
+  const tyList = document.getElementById('tyler-cash-list');
+  document.getElementById('tyler-cash-pill').textContent = fmtK(r.cashToTyler);
+
+  const personalIncomeRows = COMPANIES
+    .filter(c => c.subtype === 'passthru' && (STATE.companies[c.id] || 0) !== 0)
+    .map(c => `
+      <div class="cash-row">
+        <div class="name">${c.name} <small>pass-thru net</small></div>
+        <div class="src">to 1040</div>
+        <div class="amt ${(STATE.companies[c.id]||0)<0?'neg':'pos'}">${fmtK(STATE.companies[c.id])}</div>
+      </div>`).join('');
+
+  const tylerInvRows = INVESTMENTS
+    .filter(i => {
+      const inv = STATE.investments[i.id];
+      return inv.amount !== 0 && (!i.fundable || inv.source === 'tyler');
+    })
+    .map(i => `
+      <div class="cash-row">
+        <div class="name">${i.name} <small>${i.fundable ? 'Tyler-funded' : 'Tyler personal'}</small></div>
+        <div class="src">deployed</div>
+        <div class="amt neg">${fmtK(-Math.abs(STATE.investments[i.id].amount))}</div>
+      </div>`).join('');
+
+  tyList.innerHTML = `
+    ${personalIncomeRows || '<div class="cash-row"><div class="name">No pass-thru income</div><div class="src"></div><div class="amt">—</div></div>'}
+    <div class="cash-row">
+      <div class="name">Personal Federal taxes <small>brackets + SE + add'l Medicare</small></div>
+      <div class="src">paid</div>
+      <div class="amt neg">${fmtK(-r.personalFed)}</div>
+    </div>
+    <div class="cash-row">
+      <div class="name">Personal MS taxes <small>~4% effective</small></div>
+      <div class="src">paid</div>
+      <div class="amt neg">${fmtK(-r.personalState)}</div>
+    </div>
+    ${tylerInvRows}
+    <div class="cash-row" style="background: var(--primary-light); margin-top:10px;">
+      <div class="name" style="color: var(--primary);">Net cash to Tyler</div>
+      <div class="src"></div>
+      <div class="amt ${r.cashToTyler<0?'neg':'pos'}" style="color: ${r.cashToTyler<0?'var(--red)':'#047857'};">${fmtK(r.cashToTyler)}</div>
+    </div>
+  `;
+
+  // Cash retained at Holdings
+  const hList = document.getElementById('holdings-cash-list');
+  document.getElementById('holdings-cash-pill').textContent = fmtK(r.cashAtHoldings);
+
+  const corpRows = [];
+  if ((STATE.companies.holdings || 0) !== 0) corpRows.push({ n: 'Raborn Holdings net', v: STATE.companies.holdings });
+  const corpRowsHtml = corpRows.map(c => `
+    <div class="cash-row">
+      <div class="name">${c.n}</div>
+      <div class="src">C-Corp bucket</div>
+      <div class="amt ${c.v<0?'neg':'pos'}">${fmtK(c.v)}</div>
+    </div>`).join('') || '<div class="cash-row"><div class="name">No corporate income</div><div class="src"></div><div class="amt">—</div></div>';
+
+  const holdingsInvRows = INVESTMENTS
+    .filter(i => i.fundable && STATE.investments[i.id].source === 'holdings' && STATE.investments[i.id].amount !== 0)
+    .map(i => `
+      <div class="cash-row">
+        <div class="name">${i.name} <small>Holdings-funded</small></div>
+        <div class="src">deployed</div>
+        <div class="amt neg">${fmtK(-Math.abs(STATE.investments[i.id].amount))}</div>
+      </div>`).join('');
+
+  hList.innerHTML = `
+    ${corpRowsHtml}
+    <div class="cash-row">
+      <div class="name">Federal Corporate tax <small>21%</small></div>
+      <div class="src">paid</div>
+      <div class="amt neg">${fmtK(-r.corpFed)}</div>
+    </div>
+    <div class="cash-row">
+      <div class="name">MS Corporate tax <small>~5%</small></div>
+      <div class="src">paid</div>
+      <div class="amt neg">${fmtK(-r.corpState)}</div>
+    </div>
+    ${holdingsInvRows}
+    <div class="cash-row" style="background: var(--orange-light); margin-top:10px;">
+      <div class="name" style="color: var(--orange);">Net cash retained</div>
+      <div class="src"></div>
+      <div class="amt ${r.cashAtHoldings<0?'neg':'pos'}" style="color: ${r.cashAtHoldings<0?'var(--red)':'#047857'};">${fmtK(r.cashAtHoldings)}</div>
+    </div>
+  `;
+
+  // Investments destination card
+  const iList = document.getElementById('invest-cash-list');
+  document.getElementById('invest-cash-pill').textContent = fmtK(r.cashToInvestments);
+
+  const allInvRows = INVESTMENTS
+    .filter(i => STATE.investments[i.id].amount !== 0)
+    .map(i => {
+      const inv = STATE.investments[i.id];
+      const src = i.fundable ? (inv.source === 'holdings' ? 'from Holdings' : 'from Tyler') : 'from Tyler';
+      return `
+        <div class="cash-row">
+          <div class="name">${i.name} <small>${i.note}</small></div>
+          <div class="src">${src}</div>
+          <div class="amt ${inv.amount<0?'neg':'pos'}">${fmtK(inv.amount)}</div>
+        </div>`;
+    }).join('') || '<div class="cash-row"><div class="name">No deployments</div><div class="src"></div><div class="amt">—</div></div>';
+
+  iList.innerHTML = `
+    ${allInvRows}
+    <div class="cash-row" style="background: #d1fae5; margin-top:10px;">
+      <div class="name" style="color: #047857;">Total deployed</div>
+      <div class="src" style="color:#047857;">Tyler ${fmtK(r.investTyler)} · Holdings ${fmtK(r.investHoldings)}</div>
+      <div class="amt pos">${fmtK(r.cashToInvestments)}</div>
+    </div>
+  `;
+}
+
+function renderTaxBreakdown(r) {
+  const pl = document.getElementById('personal-tax-list');
+  const cl = document.getElementById('corp-tax-list');
+
+  const pctOf = (part, whole) => whole > 0 ? (100 * part / whole).toFixed(1) + '%' : '—';
+  const personalEff = r.personalGross > 0 ? (100 * (r.personalFed + r.personalState) / r.personalGross).toFixed(1) + '%' : '—';
+  const corpEff = r.corpGross > 0 ? (100 * (r.corpFed + r.corpState) / r.corpGross).toFixed(1) + '%' : '—';
+
+  pl.innerHTML = `
+    <div class="tax-row">
+      <div class="name">Pass-thru gross income<small>Sum of pass-thru entity nets (incl. Raborn IT)</small></div>
+      <div class="amt">${fmtK(r.personalGross)}</div>
+      <div class="pct">—</div>
+    </div>
+    <div class="tax-row">
+      <div class="name">− Traditional 401(k) / IRA<small>pre-tax deferral · reduces AGI</small></div>
+      <div class="amt neg">${fmtK(-r.traditionalDeferral)}</div>
+      <div class="pct">—</div>
+    </div>
+    <div class="tax-row" style="opacity:0.65;">
+      <div class="name">Roth 401(k) / IRA<small>after-tax · no current-year deduction (informational)</small></div>
+      <div class="amt">${fmtK(r.rothContrib)}</div>
+      <div class="pct">—</div>
+    </div>
+    <div class="tax-row">
+      <div class="name">− REPS depreciation loss<small>30% of $${(r.reCash/1000).toFixed(0)}K RE deployed (cost-seg + bonus dep.)</small></div>
+      <div class="amt neg">${fmtK(-r.repsDepLoss)}</div>
+      <div class="pct">—</div>
+    </div>
+    <div class="tax-row">
+      <div class="name">− Half SE deduction</div>
+      <div class="amt neg">${fmtK(-r.seTax/2)}</div>
+      <div class="pct">—</div>
+    </div>
+    <div class="tax-row">
+      <div class="name">− Charitable giving (itemized)</div>
+      <div class="amt neg">${fmtK(-r.charity)}</div>
+      <div class="pct">—</div>
+    </div>
+    <div class="tax-row">
+      <div class="name">Federal taxable income<small>after std. deduction & all subtractions</small></div>
+      <div class="amt">${fmtK(r.personalTaxableFed)}</div>
+      <div class="pct">—</div>
+    </div>
+    <div class="tax-row">
+      <div class="name">Federal brackets<small>2026 MFJ progressive</small></div>
+      <div class="amt">${fmtK(r.personalFedBracketTax)}</div>
+      <div class="pct">${pctOf(r.personalFedBracketTax, r.personalGross)}</div>
+    </div>
+    <div class="tax-row">
+      <div class="name">Self-employment tax<small>15.3% on Media income (capped at SS wage base)</small></div>
+      <div class="amt">${fmtK(r.seTax)}</div>
+      <div class="pct">${pctOf(r.seTax, r.personalGross)}</div>
+    </div>
+    <div class="tax-row">
+      <div class="name">Add'l Medicare 0.9%<small>on AGI over $250k MFJ</small></div>
+      <div class="amt">${fmtK(r.addlMed)}</div>
+      <div class="pct">${pctOf(r.addlMed, r.personalGross)}</div>
+    </div>
+    <div class="tax-row">
+      <div class="name">MS state personal<small>~4% · MS 529 deduction: ${fmtK(r.ms529Deduction)} (cap ${fmtK(NUM_529_BENEFICIARIES * MS_529_PER_BENEFICIARY_LIMIT)})</small></div>
+      <div class="amt">${fmtK(r.personalState)}</div>
+      <div class="pct">${pctOf(r.personalState, r.personalGross)}</div>
+    </div>
+    <div class="tax-row total">
+      <div class="name">Total personal taxes</div>
+      <div class="amt">${fmtK(r.personalFed + r.personalState)}</div>
+      <div class="pct">${personalEff}</div>
+    </div>
+  `;
+
+  // Per-entity state corp tax rows (show every C-Corp, even at 0%, so it's clear)
+  const stateRows = (r.corpStateBreakdown || []).map(e => {
+    const ratePct = (e.rate * 100).toFixed(e.rate === 0 ? 0 : 1) + '%';
+    const stateLabel = e.rate === 0 ? `${e.state} state corp (no income tax)` : `${e.state} corporate ${ratePct}`;
+    return `
+    <div class="tax-row">
+      <div class="name">${stateLabel}<small>${e.name}</small></div>
+      <div class="amt">${fmtK(e.tax)}</div>
+      <div class="pct">${pctOf(e.tax, e.taxable)}</div>
+    </div>`;
+  }).join('');
+
+  cl.innerHTML = `
+    <div class="tax-row">
+      <div class="name">C-Corp gross<small>Raborn Holdings (WY)</small></div>
+      <div class="amt">${fmtK(r.corpGross)}</div>
+      <div class="pct">—</div>
+    </div>
+    <div class="tax-row">
+      <div class="name">Federal Corporate 21%</div>
+      <div class="amt">${fmtK(r.corpFed)}</div>
+      <div class="pct">${pctOf(r.corpFed, r.corpGross)}</div>
+    </div>
+    ${stateRows}
+    <div class="tax-row total">
+      <div class="name">Total corporate taxes</div>
+      <div class="amt">${fmtK(r.corpFed + r.corpState)}</div>
+      <div class="pct">${corpEff}</div>
+    </div>
+    <div class="tax-row">
+      <div class="name">After-tax C-Corp cash<small>before deployments</small></div>
+      <div class="amt">${fmtK(r.corpAfterTax)}</div>
+      <div class="pct">—</div>
+    </div>
+  `;
+}
+
+function render() {
+  const r = compute();
+  renderSliderValues();
+  renderKPIs(r);
+  renderCashTo(r);
+  renderTaxBreakdown(r);
+}
+
+/* ---------- Init ---------- */
+document.addEventListener('DOMContentLoaded', () => {
+  buildCompanySliders();
+  buildInvestmentSliders();
+  bindSliders();
+  bindResetOnce();
+  render();
+});
+</script>
+
+</body>
+</html>
